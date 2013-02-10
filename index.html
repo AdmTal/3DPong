@@ -1,0 +1,493 @@
+<!-- 
+
+  By Adam Tal
+  AdmTal@gmail.com
+   
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link href="icon.png" rel="apple-touch-icon" />        
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="viewport" content="width=device-width,user-scalable=no">		<title>3D Pong</title>
+  
+    <script>
+      function blockMove() {
+        event.preventDefault() ;
+      }
+    </script>
+
+		<style>
+      html, body { position:relative; height: 100%; background-color:black;}
+      
+      body {
+      	background-color: white;
+      	margin: 0px;
+      	padding: 0px;
+      	overflow: hidden;
+      }
+      
+      .box1 {
+      	-webkit-transition: all .4s ease-in-out;
+      }
+      
+      .box1 .front  { background: rgba(0,0,0,0);   border:1px solid; border-color:black;}
+      .box1 .back   { background: rgba(0,0,0,0.3); border:1px solid; border-color:black;}
+      .box1 .left   { background: rgba(0,0,0,0.5); border:1px solid; border-color:black;}
+      .box1 .right  { background: rgba(0,0,0,0.5); border:1px solid; border-color:black;}
+      .box1 .bottom { background: rgba(0,0,0,0.7); border:1px solid; border-color:black }
+      .box1 .top    { background: rgba(0,0,0,0.7); border:1px solid; border-color:black;}
+      
+      .marker .front  { background: rgba(0,0,0,0);  }
+      .marker .back   { background: rgba(0,0,0,0);  }
+      .marker .left   { background: rgba(0,0,0,.2); }
+      .marker .right  { background: rgba(0,0,0,.2); }
+      .marker .bottom { background: rgba(0,0,0,.2); }
+      .marker .top    { background: rgba(0,0,0,.2); }
+      
+      .paddle_marker .front  { background: rgba(0,0,0,0); }
+      .paddle_marker .back   { background: rgba(0,0,0,0); }
+      .paddle_marker .left   { background: rgba(0,0,0,8); }
+      .paddle_marker .right  { background: rgba(0,0,0,8); }
+      .paddle_marker .bottom { background: rgba(0,0,0,8); }
+      .paddle_marker .top    { background: rgba(0,0,0,8); }
+      
+      .ball .front{
+        -webkit-border-radius: 50px;
+        -moz-border-radius: 50px;
+        border-radius: 50px;
+        background: white;
+        border-color:black;
+        border:3px solid; 
+      }
+      
+      .paddle .front  { background: rgba(255,255,255,.5); border:2px solid; border-color:black; }
+      .paddle .back   { background: rgba(255,255,255,.5); border:2px solid; border-color:black; }
+      .paddle .left   { background: rgba(255,255,255,.5); border:2px solid; border-color:black; }
+      .paddle .right  { background: rgba(255,255,255,.5); border:2px solid; border-color:black; }
+      .paddle .bottom { background: rgba(255,255,255,.5); border:2px solid; border-color:black; }
+      .paddle .top    { background: rgba(255,255,255,.5); border:2px solid; border-color:black; }
+      
+      .npc_paddle .front  { background: rgba(0,0,0,.5); border:3px solid; border-color:white; }
+      .npc_paddle .back   { background: rgba(0,0,0,.5); border:3px solid; border-color:white; }
+      .npc_paddle .left   { background: rgba(0,0,0,.5); border:3px solid; border-color:white; }
+      .npc_paddle .right  { background: rgba(0,0,0,.5); border:3px solid; border-color:white; }
+      .npc_paddle .bottom { background: rgba(0,0,0,.5); border:3px solid; border-color:white; }
+      .npc_paddle .top    { background: rgba(0,0,0,.5); border:3px solid; border-color:white; }
+      
+    #score{
+      text-align:center;
+      font-size:55px;
+      font-weight:bold;
+     -webkit-text-stroke-width: 1.5px;
+     -webkit-text-stroke-color: black;      
+    }
+    .begin{
+      position:absolute;
+      width:30%;
+      height:30%;
+      top:75%;
+      left:35%;
+      opacity:0.0;
+      -webkit-transition: .3s linear;
+      -moz-transition: .3s linear;
+      -o-transition: .3s linear;
+      transition: .3s linear;
+    }
+    .middle{
+      position:absolute;
+      width:30%;
+      height:30%;
+      top:25%;
+      left:35%;
+      opacity:1.0;
+      -webkit-transition: .7s linear;
+      -moz-transition: .7s linear;
+      -o-transition: .7s linear;
+      transition: .7s linear;
+    }
+    .end{
+      position:absolute;
+      width:30%;
+      height:30%;
+      top:0%;
+      left:35%;
+      opacity:0.0;
+      -webkit-transition: .3s linear;
+      -moz-transition: .3s linear;
+      -o-transition: .3s linear;
+      transition: .3s linear
+    }
+      
+    </style> 
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.1/jquery.min.js"></script>
+  <script>
+    var state = 1;
+    function show_score(){
+      if (state == 1){
+        $('#score').removeClass('end');
+        $('#score').toggleClass('begin');
+        document.getElementById('score').addEventListener('webkitTransitionEnd',show_score,true)
+        state = 2;
+      } else if (state == 2){
+        $('#score').removeClass('begin');
+        $('#score').toggleClass('middle');
+        state = 3;  
+      } else if (state == 3) {
+        $('#score').removeClass('middle');
+        $('#score').toggleClass('end');
+        state = 1;
+        document.getElementById('score').removeEventListener('webkitTransitionEnd',show_score,true)
+      }    
+    } 
+  </script>                                                    
+
+	</head>
+
+	<body ontouchmove="blockMove()">
+		
+    <script src="Sprite3D.js" type="text/javascript"></script>
+		<script>
+    
+      document.body.style.cursor = 'none';
+    
+      var buzz = new Audio("buzz.wav");
+      var bounce = new Audio("beep.wav");
+      var ding = new Audio("ding.wav");
+      buzz.volume = .1; // buzz is annoying!!!
+  
+      var window_width  = document.body.offsetWidth;
+      var window_height = document.body.offsetHeight;
+      
+      var window_depth = window_width * 1.25;
+      var paddle_width = window_width * .15;
+      var paddle_height = window_height * .15;
+      var paddle_thickness = paddle_width * .7;
+      var ball_thickness = paddle_width * .25;
+      
+      var half_paddle_width = paddle_width/2;
+      var half_paddle_height = paddle_height/2;
+      
+      var paddle_x_speed = 0, paddle_y_speed = 0;
+      var npc_paddle_x_speed = 0, npc_paddle_y_speed = 0;
+      
+			// create the main container
+			var stage = Sprite3D.stage();
+			
+			var box           = Sprite3D.box( window_width, window_height, window_depth, ".box1" );
+      var marker        = Sprite3D.box( window_width, window_height, ball_thickness, ".marker" );
+      var npc_paddle    = Sprite3D.box( paddle_width, paddle_height, paddle_thickness, ".npc_paddle" );
+      var paddle_marker = Sprite3D.box( window_width, window_height, paddle_thickness*.5, ".paddle_marker" );
+      var paddle        = Sprite3D.box( paddle_width, paddle_height, paddle_thickness, ".paddle" );
+      var ball          = Sprite3D.box( ball_thickness, ball_thickness, ball_thickness, ".ball" );
+      
+      // max speed is the screen diagonal length divided by (some number... was origionally 10)
+      // The paddle speed is its diagonal displacement during the most recent event call
+      
+      function pythag(a,b){
+        return Math.sqrt((a*a)+(b*b));
+      }
+    
+      max_speed =  pythag(window_width,window_depth)/1;  
+      
+      function reset_paddle(){
+        paddle.position(0,0,0);
+        paddle.update();
+      }
+      
+      npc_paddle.position(0,0,(-window_depth + (paddle_thickness/2)));
+      npc_paddle.update();
+      
+      box.z(-(window_depth/2));
+			box.update();
+      
+      paddle_marker.update();
+      
+      stage.appendChild(box);
+      stage.appendChild(marker);
+      stage.appendChild(paddle_marker);
+      stage.appendChild(npc_paddle);
+      stage.appendChild(ball);
+      stage.appendChild(paddle); 
+      
+			function move_paddle(e){
+        var x = e.pageX;
+        var y = e.pageY;
+        
+        e.target.ontouchmove = function(evt){
+          var offx = evt.pageX - x;
+          var offy = evt.pageY - y;
+          paddle.move(offx,offy,0);
+          paddle.update();
+          x = evt.pageX;
+          y = evt.pageY;
+          
+          paddle_x_speed = offx;
+          paddle_y_speed = offy;
+        };
+      }
+      
+      // the /2 doesnt need to be done everytime, should be its own variable!
+      function paddle_ball_collide(){
+        var p_left   = paddle.x() - half_paddle_width;
+        var p_right  = paddle.x() + half_paddle_width;
+        var p_top    = paddle.y() + half_paddle_height;
+        var p_bottom = paddle.y() - half_paddle_height;
+        
+        var b_left   = ball.x() - ball_width/2;
+        var b_right  = ball.x() + ball_width/2;
+        var b_top    = ball.y() + ball_height/2;
+        var b_bottom = ball.y() - ball_height/2; 
+        var b_front  = ball.z() + ball_thickness/2;   
+        
+        if ( b_front >= (-paddle_thickness))
+              if (((p_right >= b_left) && (p_left <= b_right)) && ((p_top >= b_bottom) && (p_bottom <= b_top))) 
+                  return true
+        return false;                   
+      }
+      
+      function npc_paddle_ball_collide(){
+        var p_left   = npc_paddle.x() - half_paddle_width;  
+        var p_right  = npc_paddle.x() + half_paddle_width;  
+        var p_top    = npc_paddle.y() + half_paddle_height; 
+        var p_bottom = npc_paddle.y() - half_paddle_height; 
+        
+        var b_left   = ball.x() - ball_width/2;
+        var b_right  = ball.x() + ball_width/2;
+        var b_top    = ball.y() + ball_height/2;
+        var b_bottom = ball.y() - ball_height/2; 
+        var b_back   = ball.z() - ball_thickness/2;   
+        
+        if (b_back < -(window_depth-paddle_thickness))
+              if (((p_right >= b_left) && (p_left <= b_right)) && ((p_top >= b_bottom) && (p_bottom <= b_top))) 
+                  return true
+        return false;                   
+      }      
+      
+      var x_prev = 0, y_prev = 0;
+      
+      function move_paddle_mouse(e){
+        var x,y = 0;
+        if (e.pageX >= window_width/2)
+          x = e.pageX - (window_width/2);
+        else
+          x = -((window_width/2)- e.pageX);
+          
+        if (e.pageY <= window_height/2)
+          y = -((window_height/2) - e.pageY);
+        else
+          y = (e.pageY - (window_height/2));
+          
+        paddle.x(x);
+        paddle.y(y);
+        
+        paddle_x_speed  = x_prev = x-x_prev;
+        paddle_y_speed  = y_prev = y-y_prev;
+        
+        x_prev = x;
+        y_prev = y;
+        
+        paddle.update();
+      }
+      
+      function move_npc_paddle_mouse(e){
+        var x = 0,y = 0;
+        if (e.pageX >= window_width/2)
+          x = e.pageX - (window_width/2);
+        else
+          x = -((window_width/2)- e.pageX);
+          
+        if (e.pageY <= window_height/2)
+          y = -((window_height/2) - e.pageY);
+        else
+          y = (e.pageY - (window_height/2));
+          
+        npc_paddle.x(x);
+        npc_paddle.y(y);
+        
+        npc_paddle_x_speed  = x_prev = x-x_prev;
+        npc_paddle_y_speed = y_prev = y-y_prev;
+        
+        x_prev = x;
+        y_prev = y;
+        
+        npc_paddle.update();
+      }      
+      
+      function is_touch_device() {
+        return !!('ontouchstart' in window) // works on most browsers 
+                || !!('onmsgesturechange' in window); // works on ie10
+      }
+			
+      if(is_touch_device())
+			   paddle.addEventListener("touchstart",move_paddle,true);
+      else
+         stage.addEventListener("mousemove", move_paddle_mouse, true);
+         
+      // Ball velocities
+      
+      var x_velocity;
+      var y_velocity;
+      var z_velocity;
+      var ball_width = 50;
+      var ball_height = 50;
+      
+      function reset_ball(){
+        x_velocity = Math.random() * 10;
+        if (Math.random() > .5) 
+          x_velocity = -x_velocity;
+        y_velocity = Math.random() * 10;
+        if (Math.random() > .5)
+          y_velocity = -y_velocity;
+        z_velocity = window_depth * .007;
+        
+        ball.position(0,0,window_depth/-2);
+        marker.z(ball.z());
+        marker.update();
+        ball.update();
+        //buzz.play();
+      }
+      
+      var player_score = 0;
+      var npc_score = 0;
+      
+      function move_ball(){
+        if (ball.x() < -(window_width/2)){
+          x_velocity = -x_velocity;
+          bounce.play();
+        }
+        if (ball.x() >= (window_width/2)-(ball_width)){
+          x_velocity = -x_velocity;
+          bounce.play();
+        }
+          
+        if (ball.y() < -(window_height/2)){
+          y_velocity = -y_velocity;
+          bounce.play();
+        }
+        if (ball.y() >= (window_height/2)-(ball_height)){
+          y_velocity = -y_velocity; 
+          bounce.play();
+        }
+          
+        if (ball.z() < -(window_depth)){
+          ding.play();
+          player_score++;
+          $("#score").css({'color':'yellow'});
+          $("#score").html("You : " + player_score + "<br />Computer : " + npc_score);
+          reset_ball(); // switch to computer serve
+          show_score();
+        }
+        if (ball.z() > 0){
+          reset_ball();
+          buzz.play();
+          npc_score++;
+          $("#score").css({'color':'red'});
+          $("#score").html("You : " + player_score + "<br />Computer : " + npc_score);
+          show_score();
+        }
+        
+        ball.move(x_velocity,y_velocity,z_velocity)
+        marker.z(ball.z());
+        
+        ball.update();
+        marker.update();
+        
+        if (paddle_ball_collide()){
+          // move ball away from paddle here... needs to be done so ball doesnt bounce back again.
+          // paddle speed is /5 and then added to the xy axis
+          
+          z_velocity = -(window_depth * z_speed(paddle_x_speed, paddle_y_speed));
+          x_velocity += (paddle_x_speed/10);
+          if (x_velocity > 20)
+            x_velocity = 20;
+          y_velocity += (paddle_y_speed/10);
+          if (y_velocity > 20)
+            y_velocity = 20;
+            
+          bounce.play();
+        }
+        
+        if (npc_paddle_ball_collide()){
+          // move ball away from npc_paddle here... needs to be done so ball doesnt bounce back again.
+          ball.z(-window_depth + paddle_thickness + (ball_thickness/2));
+          // npc_paddle speed is /5 and then added to the xy axis
+          z_velocity = (window_depth * z_speed(npc_paddle_x_speed, npc_paddle_y_speed));
+          x_velocity += (npc_paddle_x_speed/10);
+          if (x_velocity > 20)
+            x_velocity = 20;
+          y_velocity += (npc_paddle_y_speed/10);
+          if (y_velocity > 20)
+            y_velocity = 20;
+            
+          bounce.play();
+        }
+        paddle_x_speed = paddle_y_speed = 0;
+        npc_paddle_x_speed = npc_paddle_y_speed = 0;
+      }
+      
+      function z_speed(){
+        //min speed is .005 of window_depth
+        //max speed is .025 of window_depth
+        
+        var paddle_speed = pythag(paddle_x_speed, paddle_y_speed);
+        
+        var speed_percent = pythag(paddle_x_speed, paddle_y_speed)/max_speed;
+        if (speed_percent < .007)
+          return .007;
+        else if (speed_percent > .02)
+          return .02;
+        else
+          return speed_percent;
+      }
+      
+      function npc_ai(){
+         basic_defense();
+      }
+      
+      function basic_defense(){
+        if (ball.z() >= -(window_depth/2) || z_velocity > 0){
+          if (ball.x() > npc_paddle.x()){
+            npc_paddle.move(1,0,0);
+          }
+          if (ball.x() < npc_paddle.x()){
+            npc_paddle.move(-1,0,0);
+          }
+          if (ball.y() > npc_paddle.y()){
+            npc_paddle.move(0,1,0);
+          }
+          if (ball.y() < npc_paddle.y()){
+            npc_paddle.move(0,-1,0);
+          }
+        } else {
+          if (ball.x() > npc_paddle.x()){
+            npc_paddle.move(4,0,0);
+          }
+          if (ball.x() < npc_paddle.x()){
+            npc_paddle.move(-4,0,0);
+          }
+          if (ball.y() > npc_paddle.y()){
+            npc_paddle.move(0,4,0);
+          }
+          if (ball.y() < npc_paddle.y()){
+            npc_paddle.move(0,-4,0);
+          }
+        }
+        npc_paddle.update(); 
+      }
+      
+      reset_paddle();
+      reset_ball();
+      
+      setInterval(function () {move_ball()},17);
+      setInterval(function () {npc_ai()},1);        
+      			
+		</script>
+    
+    <div id="score" class="end">SCORE BITCH</div>
+    
+	</body>
+</html>
